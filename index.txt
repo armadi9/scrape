@@ -1,6 +1,9 @@
 <?php
 header('Content-Type: application/json');
-function getSession($wallet){
+$content = file_get_contents("php://input");
+$data = json_decode($content);
+
+function getSesi($wallet){
     $url = "https://exchanging.cc/fdg-en/";
     $h = array(
     "upgrade-insecure-requests: 1",
@@ -10,7 +13,6 @@ function getSession($wallet){
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_HTTPHEADER, $h);
-    curl_setopt($ch, CURLOPT_TIMEOUT,30);
     curl_setopt($ch, CURLOPT_COOKIEJAR, 'cookie.txt');
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
     $x = curl_exec($ch);
@@ -23,5 +25,61 @@ function getSession($wallet){
 
 }
 
-$wallet = 'DB6ZjFVp3LigRw1zpnZamYFkxqjaK2AbUT';
-print_r(getSession($wallet));
+function walletSubmit($wallet){
+
+    $timestamp = intval(microtime(true) * 1000);
+    $url = "https://exchanging.cc/fdg-en/?d=$timestamp";
+    $h = array(
+    "user-agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36",
+    "content-type: application/x-www-form-urlencoded",
+    "referer: https://exchanging.cc/fdg-en/");
+
+    $payload = "ad_hdn=ok&ad=$wallet&ref=";
+        
+	$ch = curl_init();
+	curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $h);
+    curl_setopt($ch, CURLOPT_COOKIEFILE, 'cookie.txt');
+	curl_setopt($ch, CURLOPT_POST, 1);
+	curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    $x = curl_exec($ch);
+    curl_close($ch);
+    
+    return $x;
+}
+
+function claim($wallet, $ip, $prefix, $answer){
+
+    $timestamp = intval(microtime(true) * 1000);
+    $url = "https://exchanging.cc/fdg-en/?d=$timestamp";
+    $h = array(
+    "user-agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36",
+    "content-type: application/x-www-form-urlencoded",
+    "referer: https://exchanging.cc/fdg-en/");
+
+    $payload = "dep_hdn=ok&ad=$wallet&ip=$ip&prefix=$prefix&answer=$answer";
+        
+	$ch = curl_init();
+	curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $h);
+    curl_setopt($ch, CURLOPT_COOKIEFILE, 'cookie.txt');
+	curl_setopt($ch, CURLOPT_POST, 1);
+	curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+	$x = curl_exec($ch);
+    curl_close($ch);
+    
+    return $x;
+}
+
+if ($data->type == "getsesi") {
+    echo getSesi($data->wallet);
+}
+
+if ($data->type == "walletsubmit") {
+    echo walletSubmit($data->wallet);
+}
+
+if ($data->type == "claim") {
+    echo walletSubmit($data->wallet, $data->ip, $data->prefix, $data->answer);
