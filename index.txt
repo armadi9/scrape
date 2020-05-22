@@ -82,5 +82,5 @@ if ($data->type == "walletsubmit") {
 }
 
 if ($data->type == "claim") {
-    echo walletSubmit($data->wallet, $data->ip, $data->prefix, $data->answer);
+    echo claim($data->wallet, $data->ip, $data->prefix, $data->answer);
 }
