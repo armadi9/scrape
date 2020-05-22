@@ -1,34 +1,27 @@
-<?php 
-require_once("vendor/autoload.php");
-
-function posting($img,$caption){
-	$arr = array("\r","	");
-	$url = "https://postingscrape.000webhostapp.com/database.php";
-    $h = explode("\n",str_replace($arr,"","
-    User-Agent: Dalvik/2.1.0 (Linux; U; Android 6.0.1; vivo 1606 Build/MMB29M)"));
-    $body = "img=$img&caption=$caption";
-
-	$ch = curl_init();
-	curl_setopt($ch, CURLOPT_URL, $url);
-	curl_setopt($ch, CURLOPT_HTTPHEADER, $h);
-	curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
-	curl_setopt($ch, CURLOPT_POST, 1);
-	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-	$x = curl_exec($ch);
+<?php
+header('Content-Type: application/json');
+function getSession($wallet){
+    $url = "https://exchanging.cc/fdg-en/";
+    $h = array(
+    "upgrade-insecure-requests: 1",
+    "user-agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36"
+    );
+        
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $h);
+    curl_setopt($ch, CURLOPT_TIMEOUT,30);
+    curl_setopt($ch, CURLOPT_COOKIEJAR, 'cookie.txt');
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    $x = curl_exec($ch);
     curl_close($ch);
-    return $x;
+
+    preg_match("/name='prefix' value='(.*?)' ><br><br>/", $x, $prefix);
+    preg_match("/fdg_ip\" type=\"hidden\" value=\"(.*?)\">/", $x, $iphash);
+
+    return json_encode(array("prefix"=>$prefix[1], "ip"=>$iphash[1]));
+
 }
 
-
-
-$instagram = new \InstagramScraper\Instagram();
-$medias = $instagram->getMedias('hijab.keceh', 6215);
-
-foreach ( $medias as $media ) {
-	//echo 'Caption: ' . $media['caption'] . '<br />';
-	//echo 'Image: ' . $media['imageHighResolutionUrl']."\n\n\n";
-	$foto = str_replace("&","🔜",$media['imageHighResolutionUrl']);
-	$p = posting($foto,$media['caption']);
-	echo $foto."\n" ;
-	sleep(2);
-}
+$wallet = 'DB6ZjFVp3LigRw1zpnZamYFkxqjaK2AbUT';
+print_r(getSession($wallet));
